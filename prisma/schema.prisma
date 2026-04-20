@@ -1,0 +1,31 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  subdomain   String   @unique
+  password    String                       // Client login password
+  links       Link[]
+  createdAt   DateTime @default(now())
+}
+
+model Link {
+  id          String   @id @default(cuid())
+  slug        String
+  targetUrl   String
+  clicks      Int      @default(0)
+  httpStatus  Int?
+  createdAt   DateTime @default(now())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([slug, tenantId])
+}
